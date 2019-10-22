@@ -1,0 +1,90 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<html>
+
+<head>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.min.js"></script>
+</head>
+
+<body>
+<div id="app">
+<hr>
+  Room:
+  <input v-model='roomId'></input>
+  <input v-if="ws_OK==false" type="button" value="connect" @click="connect()"></input>
+  <input v-if="ws_OK==true" type="button" value="disconnect" @click="disconnect()"></input>
+  
+  <div v-if="ws_OK==true">
+	<textarea style="width:100%;height:500px;background:#999;">{{recvMsg}}</textarea>
+	<input v-model='cmd'></input>
+	<input type="button" value="send" @click="sendCmd()"></input>
+  </div>
+  
+</div>
+
+<br>
+
+
+<script>
+var app = new Vue({
+  el: '#app',
+  data: {
+    roomId: 'webconsole_1234567',
+	roomType: '1',
+	uri:'ws://127.0.0.1:3333/wsmatcher/',
+	ws: null,
+	ws_OK: false,
+	recvMsg:'',
+	cmd:''
+  },
+  methods:{
+	connect() {
+		this.ws = new WebSocket(this.url)
+		var that = this
+		this.ws.onopen = function (evt) {
+			console.log("Connection opened")
+			that.ws_OK = true
+		}
+		this.ws.onmessage = function (evt) {
+			console.log("Received Message: " + evt.data)
+			that.recvMsg += evt.data
+		}
+		this.ws.onclose = function (evt) {
+			console.log("Connection closed")
+			that.ws_OK = false
+		}
+	},
+	disconnect() {
+		this.ws_OK = false
+		this.ws = null
+	},
+	sendCmd() {
+		this.recvMsg = ""
+		this.ws.send(this.cmd)
+		this.cmd = ''
+	}
+  },
+  created: function(){
+  },
+  mounted:function(){
+  },
+  computed: {
+	url: function() {
+		return this.uri + this.roomId + '?type=' + this.roomType
+	}
+  }
+})
+</script>
+
+
+<hr>
+
+
+<script>
+	console.log('i am demo')
+</script>
+</body>
+
+
+
+</html>
